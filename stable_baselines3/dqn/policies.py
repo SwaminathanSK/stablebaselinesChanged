@@ -95,6 +95,7 @@ class QNetwork(BasePolicy):
 
         self.net_arch = net_arch
         self.activation_fn = activation_fn
+        self.activation_fn_2 = activation_fn_2
         self.features_dim = features_dim
         action_dim = int(self.action_space.n)  # number of actions
         q_net = create_mlp(self.features_dim, action_dim, self.net_arch, self.activation_fn, self.activation_fn_2)
