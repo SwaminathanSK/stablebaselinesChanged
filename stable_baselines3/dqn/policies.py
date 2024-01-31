@@ -19,7 +19,7 @@ class FTA(nn.Module):
     ### Fuzzy Tiling Activations (FTA)
     """
 
-    def __init__(self, lower_limit: float, upper_limit: float, delta: float, eta: float):
+    def __init__(self, lower_limit: float = -10, upper_limit: float = 10, delta: float = 2., eta: float = 0.5):
         """
         :param lower_limit: is the lower limit $l$
         :param upper_limit: is the upper limit $u$
