@@ -141,6 +141,7 @@ def create_mlp(
         modules.append(nn.Linear(net_arch[idx], net_arch[idx + 1], bias=with_bias))
         modules.append(activation_fn())
     
+    idx = len(net_arch) - 2
     modules.append(nn.Linear(net_arch[idx], net_arch[idx + 1], bias=with_bias))
     modules.append(activation_fn2())
 
