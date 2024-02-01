@@ -80,7 +80,7 @@ class QNetwork(BasePolicy):
         features_dim: int,
         net_arch: Optional[List[int]] = None,
         activation_fn: Type[nn.Module] = nn.ReLU,
-        activation_fn_2 = FTA(-10, 10, 20., 0.5),
+        activation_fn_2 = FTA(-1, 1, 2., 0.5),
         normalize_images: bool = True,
     ) -> None:
         super().__init__(
