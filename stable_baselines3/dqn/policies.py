@@ -55,6 +55,7 @@ class FTA(nn.Module):
 
         # Reshape back to original number of dimensions.
         # The last dimension size gets expanded by the number of bins, $\frac{u - l}{\delta}$.
+        z = th.mean(z, -1, keepdim=True)
         return z.view(*z.shape[:-2], -1)
 
 
@@ -80,7 +81,7 @@ class QNetwork(BasePolicy):
         features_dim: int,
         net_arch: Optional[List[int]] = None,
         activation_fn: Type[nn.Module] = nn.ReLU,
-        activation_fn_2 = FTA(-1, 1, 2., 2.),
+        activation_fn_2 = FTA(-10, 10, 2., 2.), # (u - l)/delta should be be one
         normalize_images: bool = True,
     ) -> None:
         super().__init__(
