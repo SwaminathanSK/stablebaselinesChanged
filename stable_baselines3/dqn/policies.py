@@ -14,6 +14,50 @@ from stable_baselines3.common.torch_layers import (
 )
 from stable_baselines3.common.type_aliases import PyTorchObs, Schedule
 
+class FTA(nn.Module):
+    """
+    ### Fuzzy Tiling Activations (FTA)
+    """
+
+    def __init__(self, lower_limit: float = -10, upper_limit: float = 10, delta: float = 2., eta: float = 0.5):
+        """
+        :param lower_limit: is the lower limit $l$
+        :param upper_limit: is the upper limit $u$
+        :param delta: is the bin size $\delta$
+        :param eta: is the parameter $\eta$ that detemines the softness of the boundaries.
+        """
+        super().__init__()
+        # Initialize tiling vector
+        # $$\mathbf{c} = (l, l + \delta, l + 2 \delta, \dots, u - 2 \delta, u - \delta)$$
+        self.c = nn.Parameter(th.arange(lower_limit, upper_limit, delta), requires_grad=False)
+        # The input vector expands by a factor equal to the number of bins $\frac{u - l}{\delta}$
+        self.expansion_factor = len(self.c)
+        # $\delta$
+        self.delta = delta
+        # $\eta$
+        self.eta = eta
+
+    def fuzzy_i_plus(self, x: th.Tensor):
+        """
+        #### Fuzzy indicator function
+
+        $$I_{\eta,+}(x) = I_+(\eta - x) x + I_+ (x - \eta)$$
+        """
+        return (x <= self.eta) * x + (x > self.eta)
+
+    def forward(self, z: th.Tensor):
+        # Add another dimension of size $1$.
+        # We will expand this into bins.
+        z = z.view(*z.shape, 1)
+
+        # $$\phi_\eta(z) = 1 - I_{\eta,+} \big( \max(\mathbf{c} - z, 0) + \max(z - \delta - \mathbf{c}, 0) \big)$$
+        z = 1. - self.fuzzy_i_plus(th.clip(self.c - z, min=0.) + th.clip(z - self.delta - self.c, min=0.))
+
+        # Reshape back to original number of dimensions.
+        # The last dimension size gets expanded by the number of bins, $\frac{u - l}{\delta}$.
+        z = th.mean(z, -1, keepdim=True)
+        return z.view(*z.shape[:-2], -1)
+
 
 class QNetwork(BasePolicy):
     """
@@ -37,6 +81,7 @@ class QNetwork(BasePolicy):
         features_dim: int,
         net_arch: Optional[List[int]] = None,
         activation_fn: Type[nn.Module] = nn.ReLU,
+        activation_fn_2 = FTA(-10, 10, 2., 2.), # (u - l)/delta should be be one
         normalize_images: bool = True,
     ) -> None:
         super().__init__(
@@ -51,9 +96,10 @@ class QNetwork(BasePolicy):
 
         self.net_arch = net_arch
         self.activation_fn = activation_fn
+        self.activation_fn_2 = activation_fn_2
         self.features_dim = features_dim
         action_dim = int(self.action_space.n)  # number of actions
-        q_net = create_mlp(self.features_dim, action_dim, self.net_arch, self.activation_fn)
+        q_net = create_mlp(self.features_dim, action_dim, self.net_arch, self.activation_fn, self.activation_fn_2)
         self.q_net = nn.Sequential(*q_net)
 
     def forward(self, obs: PyTorchObs) -> th.Tensor:

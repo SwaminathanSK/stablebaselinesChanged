@@ -137,16 +137,14 @@ def create_mlp(
     else:
         modules = []
 
-    for idx in range(len(net_arch) - 2):
+    for idx in range(len(net_arch) - 1):
         modules.append(nn.Linear(net_arch[idx], net_arch[idx + 1], bias=with_bias))
         modules.append(activation_fn())
     
-    modules.append(nn.Linear(net_arch[idx], net_arch[idx + 1], bias=with_bias))
-    modules.append(activation_fn2())
-
     if output_dim > 0:
         last_layer_dim = net_arch[-1] if len(net_arch) > 0 else input_dim
         modules.append(nn.Linear(last_layer_dim, output_dim, bias=with_bias))
+        modules.append(activation_fn2)
     if squash_output:
         modules.append(nn.Tanh())
     return modules

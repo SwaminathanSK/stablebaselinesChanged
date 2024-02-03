@@ -21,7 +21,7 @@ It creates "virtual" transitions by relabeling transitions (changing the desired
 
 .. warning::
 
-    HER requires the environment to follow the legacy `gym_robotics.GoalEnv interface <https://github.com/Farama-Foundation/Gymnasium-Robotics/blob/a35b1c1fa669428bf640a2c7101e66eb1627ac3a/gym_robotics/core.py#L8>`_
+    HER requires the environment to follow the legacy `gym_robotics.GoalEnv interface <https://github.com/Farama-Foundation/Gymnasium-Robotics/blob/a35b1c1fa669428bf65a2c7101e66eb1627ac3a/gym_robotics/core.py#L8>`_
     In short, the ``gym.Env`` must have:
     - a vectorized implementation of ``compute_reward()``
     - a dictionary observation space with three keys: ``observation``, ``achieved_goal`` and ``desired_goal``
